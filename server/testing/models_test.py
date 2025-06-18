@@ -1,29 +1,31 @@
 from datetime import datetime
-
+import pytest
 from app import app
 from models import db, Message
+
+@pytest.fixture(autouse=True)
+def setup_db():
+    with app.app_context():
+        # Drop all tables
+        db.drop_all()
+        # Create tables with the correct schema
+        db.create_all()
+        yield
+        # Clean up after tests
+        db.session.remove()
+        db.drop_all()
 
 class TestMessage:
     '''Message model in models.py'''
 
-    with app.app_context():
-        m = Message.query.filter(
-            Message.body == "Hello 👋"
-            ).filter(Message.username == "Liza")
-
-        for message in m:
-            db.session.delete(message)
-
-        db.session.commit()
-
-    def test_has_correct_columns(self):
-        '''has columns for message body, username, and creation time.'''
+    def test_has_correct_columns(self, setup_db):
         with app.app_context():
-
-            hello_from_liza = Message(
+            # Create a test message
+            test_message = Message(
                 body="Hello 👋",
-                username="Liza")
-            
+                username="Liza"
+            )
+            db.session.add(test_message)
             db.session.add(hello_from_liza)
             db.session.commit()
 

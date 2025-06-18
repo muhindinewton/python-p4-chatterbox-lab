@@ -1,23 +1,49 @@
 from datetime import datetime
-
+import pytest
 from app import app
 from models import db, Message
+
+@pytest.fixture(autouse=True)
+def setup_db():
+    with app.app_context():
+        # Drop all tables
+        db.drop_all()
+        # Create tables with the correct schema
+        db.create_all()
+        yield
+        # Clean up after tests
+        db.session.remove()
+        db.drop_all()
 
 class TestApp:
     '''Flask application in app.py'''
 
-    with app.app_context():
-        m = Message.query.filter(
-            Message.body == "Hello 👋"
+    def test_has_correct_columns(self, setup_db):
+        with app.app_context():
+            # Create a test message
+            test_message = Message(
+                body="Hello 👋",
+                username="Liza"
+            )
+            db.session.add(test_message)
+            db.session.commit()
+
+            # Query the message
+            m = Message.query.filter(
+                Message.body == "Hello 👋"
             ).filter(Message.username == "Liza")
 
-        for message in m:
+            # Verify the message exists and has the correct columns
+            assert m.count() == 1
+            message = m.first()
+            assert hasattr(message, 'created_at')
+            assert hasattr(message, 'updated_at')
+            assert isinstance(message.created_at, datetime)
+            assert isinstance(message.updated_at, datetime)
+
+            # Clean up
             db.session.delete(message)
-
-        db.session.commit()
-
-    def test_has_correct_columns(self):
-        with app.app_context():
+            db.session.commit()
 
             hello_from_liza = Message(
                 body="Hello 👋",
