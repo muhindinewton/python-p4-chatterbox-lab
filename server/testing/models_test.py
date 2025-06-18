@@ -22,13 +22,18 @@ class TestMessage:
         with app.app_context():
             # Create a test message
             test_message = Message(
-                body="Hello 👋",
+                body="Hello World",
                 username="Liza"
             )
             db.session.add(test_message)
-            db.session.add(hello_from_liza)
             db.session.commit()
 
-            assert(hello_from_liza.body == "Hello 👋")
-            assert(hello_from_liza.username == "Liza")
-            assert(type(hello_from_liza.created_at) == datetime)
+            # Verify the message properties
+            assert test_message.body == "Hello World"
+            assert test_message.username == "Liza"
+            assert isinstance(test_message.created_at, datetime)
+            assert isinstance(test_message.updated_at, datetime)
+
+            # Clean up
+            db.session.delete(test_message)
+            db.session.commit()

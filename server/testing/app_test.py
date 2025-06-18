@@ -111,10 +111,18 @@ class TestApp:
             db.session.commit()
 
 
-    def test_updates_body_of_message_in_database(self):
+    def test_updates_body_of_message_in_database(self, setup_db):
         '''updates the body of a message in the database.'''
         with app.app_context():
+            # Create a test message
+            test_message = Message(
+                body="Hello 👋",
+                username="Liza"
+            )
+            db.session.add(test_message)
+            db.session.commit()
 
+            # Get the message
             m = Message.query.first()
             id = m.id
             body = m.body
@@ -133,10 +141,18 @@ class TestApp:
             db.session.add(g)
             db.session.commit()
 
-    def test_returns_data_for_updated_message_as_json(self):
+    def test_returns_data_for_updated_message_as_json(self, setup_db):
         '''returns data for the updated message as JSON.'''
         with app.app_context():
+            # Create a test message
+            test_message = Message(
+                body="Hello 👋",
+                username="Liza"
+            )
+            db.session.add(test_message)
+            db.session.commit()
 
+            # Get the message
             m = Message.query.first()
             id = m.id
             body = m.body
